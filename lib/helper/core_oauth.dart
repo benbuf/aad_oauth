@@ -21,7 +21,8 @@ class CoreOAuth {
           errorType: ErrorType.unsupported,
           message: 'Unsupported silentlyLogin');
 
-  Future<void> logout({bool showPopup = true, bool clearCookies = true}) async =>
+  Future<void> logout(
+          {bool showPopup = true, bool clearCookies = true}) async =>
       throw UnsupportedFailure(
           errorType: ErrorType.unsupported, message: 'Unsupported logout');
 
@@ -29,6 +30,11 @@ class CoreOAuth {
 
   Future<String?> getAccessToken() async => throw UnsupportedFailure(
       errorType: ErrorType.unsupported, message: 'Unsupported getAccessToken');
+
+  Future<String?> getAccessTokenForScope(String scope) async =>
+      throw UnsupportedFailure(
+          errorType: ErrorType.unsupported,
+          message: 'Unsupported getAccessToken');
 
   Future<String?> getIdToken() async => throw UnsupportedFailure(
       errorType: ErrorType.unsupported, message: 'Unsupported getAccessToken');
@@ -48,7 +54,8 @@ class MockCoreOAuth extends CoreOAuth {
       Right(Token(accessToken: mockAccessToken));
 
   @override
-  Future<void> logout({bool showPopup = true, bool clearCookies = true}) async {}
+  Future<void> logout(
+      {bool showPopup = true, bool clearCookies = true}) async {}
 
   @override
   Future<bool> get hasCachedAccountInformation async => true;

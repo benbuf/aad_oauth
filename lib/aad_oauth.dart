@@ -33,11 +33,16 @@ class AadOAuth {
   /// Retrieve cached OAuth Access Token.
   Future<String?> getAccessToken() async => _coreOAuth.getAccessToken();
 
+  /// Retrieve cached OAuth Access Token for a given scope
+  Future<String?> getAccessTokenForScope(String scope) async =>
+      _coreOAuth.getAccessTokenForScope(scope);
+
   /// Retrieve cached OAuth Id Token.
   Future<String?> getIdToken() async => _coreOAuth.getIdToken();
 
   /// Perform Azure AD logout.
-  Future<void> logout({bool showWebPopup = true, bool clearCookies = true}) async =>
+  Future<void> logout(
+          {bool showWebPopup = true, bool clearCookies = true}) async =>
       _coreOAuth.logout(showPopup: showWebPopup, clearCookies: clearCookies);
 
   /// Checks if MSAL has cached information

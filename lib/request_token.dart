@@ -15,16 +15,23 @@ class RequestToken {
 
   RequestToken(this.config);
 
-  Future<Either<Failure, Token>> requestToken(String code) async {
+  Future<Either<Failure, Token>> requestToken(String code,
+      {String? scope}) async {
     final tokenRequest = TokenRequestDetails(config, code);
+    if (scope != null) {
+      tokenRequest.params['scope'] = scope;
+    }
     return await _sendTokenRequest(
         tokenRequest.url, tokenRequest.params, tokenRequest.headers);
   }
 
-  Future<Either<Failure, Token>> requestRefreshToken(
-      String refreshToken) async {
+  Future<Either<Failure, Token>> requestRefreshToken(String refreshToken,
+      {String? scope}) async {
     final tokenRefreshRequest =
         TokenRefreshRequestDetails(config, refreshToken);
+    if (scope != null) {
+      tokenRefreshRequest.params['scope'] = scope;
+    }
     return await _sendTokenRequest(tokenRefreshRequest.url,
         tokenRefreshRequest.params, tokenRefreshRequest.headers);
   }

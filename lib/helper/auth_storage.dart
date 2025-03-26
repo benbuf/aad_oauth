@@ -13,14 +13,16 @@ class AuthStorage {
       : _tokenIdentifier = tokenIdentifier,
         _secureStorage = FlutterSecureStorage(aOptions: aOptions);
 
-  Future<void> saveTokenToCache(Token token) async {
+  Future<void> saveTokenToCache(Token token, {String? scope}) async {
     var data = Token.toJsonMap(token);
     var json = jsonEncode(data);
-    await _secureStorage.write(key: _tokenIdentifier, value: json);
+    var tokenIdentifier = scope ?? _tokenIdentifier;
+    await _secureStorage.write(key: tokenIdentifier, value: json);
   }
 
-  Future<T> loadTokenFromCache<T extends Token>() async {
-    var json = await _secureStorage.read(key: _tokenIdentifier);
+  Future<T> loadTokenFromCache<T extends Token>({String? scope}) async {
+    var tokenIdentifier = scope ?? _tokenIdentifier;
+    var json = await _secureStorage.read(key: tokenIdentifier);
     if (json == null) return emptyToken as FutureOr<T>;
     try {
       var data = jsonDecode(json);

@@ -45,7 +45,7 @@ class MobileOAuth extends CoreOAuth {
   /// Tries to silently login. will try to use the existing refresh token to get
   /// a new token.
   @override
-  Future<Either<Failure, Token>> refreshToken() async {
+  Future<Either<Failure, Token>> refreshToken({String? scope}) async {
     var token = await _authStorage.loadTokenFromCache();
 
     if (!token.hasValidAccessToken()) {
@@ -53,8 +53,8 @@ class MobileOAuth extends CoreOAuth {
     }
 
     if (token.hasRefreshToken()) {
-      final result =
-          await _requestToken.requestRefreshToken(token.refreshToken!);
+      final result = await _requestToken
+          .requestRefreshToken(token.refreshToken!, scope: scope);
       //If refresh token request throws an exception, we have to do
       //a fullAuthFlow.
       result.fold(
@@ -63,7 +63,7 @@ class MobileOAuth extends CoreOAuth {
       );
     }
 
-    await _authStorage.saveTokenToCache(token);
+    await _authStorage.saveTokenToCache(token, scope: scope);
     return Right(token);
   }
 
@@ -87,6 +87,34 @@ class MobileOAuth extends CoreOAuth {
     } else {
       await refreshToken();
       token = await _authStorage.loadTokenFromCache();
+      accessToken = token.accessToken;
+    }
+
+    _accessTokenCompleter?.complete(accessToken);
+    _accessTokenCompleter = null;
+    return accessToken;
+  }
+
+  /// Retrieve cached OAuth Access Token for a given scope.
+  /// If access token is not valid it tries to refresh the token.
+  /// parallel can be made [getAccessToken] will make sure only one request
+  /// for refreshing token is made.
+  @override
+  Future<String?> getAccessTokenForScope(String scope) async {
+    if (_accessTokenCompleter != null) {
+      return _accessTokenCompleter?.future;
+    } else {
+      _accessTokenCompleter = Completer();
+    }
+
+    var token = await _authStorage.loadTokenFromCache(scope: scope);
+    String? accessToken;
+
+    if (token.hasValidAccessToken()) {
+      accessToken = token.accessToken;
+    } else {
+      await refreshToken(scope: scope);
+      token = await _authStorage.loadTokenFromCache(scope: scope);
       accessToken = token.accessToken;
     }
 
