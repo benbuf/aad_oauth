@@ -26,6 +26,9 @@ external void jsLogin(
   void Function(dynamic) onError,
 );
 
+@JS('getAccessTokenForScope')
+external Object jsGetAccessTokenForScope(String scope);
+
 @JS('logout')
 external void jsLogout(
   void Function() onSuccess,
@@ -46,6 +49,7 @@ external bool jsHasCachedAccountInformation();
 external void jsRefreshToken(
   void Function(dynamic) onSuccess,
   void Function(dynamic) onError,
+  String? scope
 );
 
 class WebOAuth extends CoreOAuth {
@@ -86,6 +90,11 @@ class WebOAuth extends CoreOAuth {
   }
 
   @override
+  Future<String?> getAccessTokenForScope(String scope) async {
+    return promiseToFuture(jsGetAccessTokenForScope(scope));
+  }
+
+  @override
   Future<String?> getIdToken() async {
     return promiseToFuture(jsGetIdToken());
   }
@@ -115,7 +124,7 @@ class WebOAuth extends CoreOAuth {
   }
 
   @override
-  Future<Either<Failure, Token>> refreshToken() {
+  Future<Either<Failure, Token>> refreshToken({String? scope}) {
     final completer = Completer<Either<Failure, Token>>();
 
     jsRefreshToken(
@@ -125,7 +134,7 @@ class WebOAuth extends CoreOAuth {
             errorType: ErrorType.accessDeniedOrAuthenticationCanceled,
             message:
                 'Access denied or authentication canceled. Error: ${error.toString()}',
-          )))),
+          )))), scope
     );
 
     return completer.future;

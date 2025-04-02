@@ -58,7 +58,7 @@ var aadOauth = (function () {
   // could not be acquired or if no cached account credentials exist.
   // Will return the authentication result on success and update the
   // global authResult variable.
-  async function silentlyAcquireToken() {
+  async function silentlyAcquireToken(scope) {
     try {
       // The redirect handler task will complete with auth results if we
       // were redirected from AAD. If not, it will complete with null
@@ -79,14 +79,16 @@ var aadOauth = (function () {
     if (account == null) {
       return null;
     }
-
+    if(scope === undefined){
+      scope = tokenRequest.scopes;
+    }
     try {
       // Silent acquisition only works if the access token is either
       // within its lifetime, or the refresh token can successfully be
       // used to refresh it. This will throw if the access token can't
       // be acquired.
       const silentAuthResult = await myMSALObj.acquireTokenSilent({
-        scopes: tokenRequest.scopes,
+        scopes: scope,
         prompt: "none",
         account: account,
         extraQueryParameters: tokenRequest.extraQueryParameters
@@ -163,7 +165,7 @@ var aadOauth = (function () {
   // Tries to refresh the token. Will call [onError] if a token
   // could not be acquired or if no cached account credentials exist.
   // Will call [onSuccess] on success and update the global authResult variable.
-  async function refreshToken(onSuccess, onError) {
+  async function refreshToken(onSuccess, onError, scope) {
     try {
       // The redirect handler task will complete with auth results if we
       // were redirected from AAD. If not, it will complete with null
@@ -183,7 +185,7 @@ var aadOauth = (function () {
 
     // Try to sign in silently, assuming we have already signed in and have
     // a cached access token
-    await silentlyAcquireToken()
+    await silentlyAcquireToken(scope)
 
     if(authResult != null) {
       onSuccess(authResult.accessToken ?? null);
@@ -247,6 +249,11 @@ var aadOauth = (function () {
 
   async function getAccessToken() {
     var result = await silentlyAcquireToken()
+    return result ? result.accessToken : null;
+  }
+  
+  async function getAccessTokenForScope(scope) {
+    var result = await silentlyAcquireToken(scope)
     return result ? result.accessToken : null;
   }
 

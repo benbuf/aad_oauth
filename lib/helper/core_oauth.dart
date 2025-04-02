@@ -34,7 +34,7 @@ class CoreOAuth {
   Future<String?> getAccessTokenForScope(String scope) async =>
       throw UnsupportedFailure(
           errorType: ErrorType.unsupported,
-          message: 'Unsupported getAccessToken');
+          message: 'Unsupported getAccessTokenForScope');
 
   Future<String?> getIdToken() async => throw UnsupportedFailure(
       errorType: ErrorType.unsupported, message: 'Unsupported getAccessToken');
