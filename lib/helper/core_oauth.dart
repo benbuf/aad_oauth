@@ -64,5 +64,8 @@ class MockCoreOAuth extends CoreOAuth {
   Future<String?> getAccessToken() async => mockAccessToken;
 
   @override
+  Future<String?> getAccessTokenForScope(String scope) async => mockAccessToken;
+
+  @override
   Future<String?> getIdToken() async => mockIdToken;
 }

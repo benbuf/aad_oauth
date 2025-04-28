@@ -79,8 +79,11 @@ var aadOauth = (function () {
     if (account == null) {
       return null;
     }
-    if(scope === undefined){
+    if (scope === undefined) {
       scope = tokenRequest.scopes;
+    }
+    else {
+      scope = [scope];
     }
     try {
       // Silent acquisition only works if the access token is either
@@ -124,7 +127,7 @@ var aadOauth = (function () {
     // a cached access token
     await silentlyAcquireToken()
 
-    if(authResult != null) {
+    if (authResult != null) {
       // Skip interactive login
       onSuccess(authResult.accessToken ?? null);
       return
@@ -187,7 +190,7 @@ var aadOauth = (function () {
     // a cached access token
     await silentlyAcquireToken(scope)
 
-    if(authResult != null) {
+    if (authResult != null) {
       onSuccess(authResult.accessToken ?? null);
       return
     }
@@ -251,7 +254,7 @@ var aadOauth = (function () {
     var result = await silentlyAcquireToken()
     return result ? result.accessToken : null;
   }
-  
+
   async function getAccessTokenForScope(scope) {
     var result = await silentlyAcquireToken(scope)
     return result ? result.accessToken : null;
@@ -273,6 +276,7 @@ var aadOauth = (function () {
     logout: logout,
     getIdToken: getIdToken,
     getAccessToken: getAccessToken,
+    getAccessTokenForScope: getAccessTokenForScope,
     hasCachedAccountInformation: hasCachedAccountInformation,
   };
 })();
