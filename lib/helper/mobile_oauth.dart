@@ -17,6 +17,7 @@ class MobileOAuth extends CoreOAuth {
   final RequestToken _requestToken;
 
   Completer<String?>? _accessTokenCompleter;
+  List<FlexibleSemaphore> _semaphoreList = new List.empty(growable: true);
 
   /// Instantiating MobileAadOAuth authentication.
   /// [config] Parameters according to official Microsoft Documentation.
@@ -46,7 +47,7 @@ class MobileOAuth extends CoreOAuth {
   /// a new token.
   @override
   Future<Either<Failure, Token>> refreshToken({String? scope}) async {
-    var token = await _authStorage.loadTokenFromCache();
+    var token = await _authStorage.loadTokenFromCache(scope: scope);
 
     if (!token.hasValidAccessToken()) {
       token.accessToken = null;
@@ -101,10 +102,14 @@ class MobileOAuth extends CoreOAuth {
   /// for refreshing token is made.
   @override
   Future<String?> getAccessTokenForScope(String scope) async {
-    if (_accessTokenCompleter != null) {
-      return _accessTokenCompleter?.future;
+    var semaphore = _semaphoreList.where((e) => e.scope == scope).singleOrNull;
+
+    if (semaphore != null) {
+      return semaphore._completer.future;
     } else {
-      _accessTokenCompleter = Completer();
+      FlexibleSemaphore newSemaphore = FlexibleSemaphore(scope: scope);
+      semaphore = newSemaphore;
+      _semaphoreList.add(newSemaphore);
     }
 
     var token = await _authStorage.loadTokenFromCache(scope: scope);
@@ -117,9 +122,9 @@ class MobileOAuth extends CoreOAuth {
       token = await _authStorage.loadTokenFromCache(scope: scope);
       accessToken = token.accessToken;
     }
+    semaphore.complete(accessToken);
+    _semaphoreList.removeWhere((e) => e.scope == scope);
 
-    _accessTokenCompleter?.complete(accessToken);
-    _accessTokenCompleter = null;
     return accessToken;
   }
 
@@ -208,3 +213,18 @@ class MobileOAuth extends CoreOAuth {
 }
 
 CoreOAuth getOAuthConfig(Config config) => MobileOAuth(config);
+
+class FlexibleSemaphore {
+  Completer<String> _completer = Completer<String>();
+  Future<String> get wait => _completer.future;
+  Completer<String> get completer => _completer;
+  String scope;
+
+  FlexibleSemaphore({required this.scope});
+
+  void complete(String? token) {
+    _completer.complete(token);
+
+    _completer = Completer<String>(); // Allow re-use
+  }
+}
