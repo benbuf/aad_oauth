@@ -47,7 +47,7 @@ class MobileOAuth extends CoreOAuth {
   /// a new token.
   @override
   Future<Either<Failure, Token>> refreshToken({String? scope}) async {
-    var token = await _authStorage.loadTokenFromCache(scope: scope);
+    var token = await _authStorage.loadTokenFromCache();
 
     if (!token.hasValidAccessToken()) {
       token.accessToken = null;
@@ -122,9 +122,10 @@ class MobileOAuth extends CoreOAuth {
       token = await _authStorage.loadTokenFromCache(scope: scope);
       accessToken = token.accessToken;
     }
-    semaphore.complete(accessToken);
-    _semaphoreList.removeWhere((e) => e.scope == scope);
-
+    if (accessToken != null) {
+      semaphore.complete(accessToken);
+      _semaphoreList.removeWhere((e) => e.scope == scope);
+    }
     return accessToken;
   }
 
